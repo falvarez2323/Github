@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulario de Solicitudes</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      height: 100vh;
+    }
+    .form-container {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      width: 90%;
+      max-width: 500px;
+      padding: 20px;
+    }
+    .form-step {
+      display: none;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    .form-step.active {
+      display: block;
+    }
+    .form-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .form-header h1 {
+      font-size: 1.5rem;
+      color: #333;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+    button {
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .progress-bar {
+      height: 5px;
+      background-color: #ddd;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .progress {
+      height: 100%;
+      background-color: #007bff;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    .test-btn-container {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="form-container">
+  <div class="progress-bar">
+    <div class="progress" id="progress"></div>
+  </div>
+  <form id="solicitudForm">
+    <!-- Paso 1 -->
+    <div class="form-step active">
+      <div class="form-header">
+        <h1>ID de Solicitud</h1>
+      </div>
+      <label for="idsolicitud">ID de la Solicitud:</label>
+      <input type="text" id="idsolicitud" required>
+      <button type="button" class="next-btn">Siguiente</button>
+    </div>
+
+    <!-- Paso 2 -->
+    <div class="form-step">
+      <div class="form-header">
+        <h1>Fechas de Vacaciones</h1>
+      </div>
+      <label for="fechaInicio">Fecha de Inicio:</label>
+      <input type="date" id="fechaInicio" required>
+      <label for="fechaFinal">Fecha Final:</label>
+      <input type="date" id="fechaFinal" required>
+      <button type="button" class="prev-btn">Anterior</button>
+      <button type="button" class="next-btn">Siguiente</button>
+    </div>
+
+    <!-- Paso 3 -->
+    <div class="form-step">
+      <div class="form-header">
+        <h1>Detalles del Solicitante</h1>
+      </div>
+      <label for="nombreSolicitante">Nombre del Solicitante:</label>
+      <input type="text" id="nombreSolicitante" required>
+      <label for="correoSolicitante">Correo Electrónico:</label>
+      <input type="email" id="correoSolicitante" required>
+      <button type="button" class="prev-btn">Anterior</button>
+      <button type="submit">Enviar</button>
+    </div>
+  </form>
+</div>
+
+<!-- Botón para probar la función testEndpoint -->
+<div class="test-btn-container">
+  <button id="testButton">Probar doTest</button>
+  <div id="testResponse" style="margin-top: 20px; color: #333;"></div>
+</div>
+
+<script>
+  const steps = document.querySelectorAll('.form-step');
+  const nextBtns = document.querySelectorAll('.next-btn');
+  const prevBtns = document.querySelectorAll('.prev-btn');
+  const progress = document.getElementById('progress');
+  let currentStep = 0;
+
+  // Navegación entre pasos
+  nextBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      steps[currentStep].classList.remove('active');
+      currentStep++;
+      steps[currentStep].classList.add('active');
+      updateProgress();
+    });
+  });
+
+  prevBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      steps[currentStep].classList.remove('active');
+      currentStep--;
+      steps[currentStep].classList.add('active');
+      updateProgress();
+    });
+  });
+
+  function updateProgress() {
+    progress.style.width = ((currentStep + 1) / steps.length) * 100 + '%';
+  }
+
+  // Envío del formulario
+  document.getElementById('solicitudForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const solicitud = {
+      Idsolicitud: document.getElementById("idsolicitud").value,
+      "Fecha de inicio": document.getElementById("fechaInicio").value,
+      "Fecha final": document.getElementById("fechaFinal").value,
+      "Nombre del Solicitante": document.getElementById("nombreSolicitante").value,
+      CorreoSolicitante: document.getElementById("correoSolicitante").value,
+    };
+
+    try {
+      const response = await fetch("https://script.google.com/macros/s/AKfycbwnj8yIkzEJMjU0dVcsNXvbHAxr6S5lHIfA6WYHu53EH8eot10OZyJ5J5gJIBEdlrEa/exec", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(solicitud),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        alert("Formulario enviado con éxito.");
+        e.target.reset();
+        currentStep = 0;
+        steps.forEach((step) => step.classList.remove('active'));
+        steps[0].classList.add('active');
+        updateProgress();
+      } else {
+        alert("Error al enviar: " + result.message);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("No se pudo enviar la solicitud. Verifica tu conexión.");
+    }
+  });
+
+  // Prueba del endpoint testEndpoint
+  document.getElementById('testButton').addEventListener('click', async () => {
+    const testResponse = document.getElementById('testResponse');
+    testResponse.textContent = "Ejecutando prueba...";
+    try {
+      const response = await fetch("https://script.google.com/macros/s/AKfycbwnj8yIkzEJMjU0dVcsNXvbHAxr6S5lHIfA6WYHu53EH8eot10OZyJ5J5gJIBEdlrEa/exec/testEndpoint");
+      const result = await response.json();
+      testResponse.textContent = `Resultado: ${JSON.stringify(result)}`;
+    } catch (error) {
+      console.error(error);
+      testResponse.textContent = "Error al ejecutar la prueba.";
+    }
+  });
+</script>
+
+</body>
+</html>
